@@ -4,7 +4,11 @@ cmake_minimum_required(VERSION 3.10)
 # 프로젝트 이름과 사용 언어 설정
 project(FirstOpenGL LANGUAGES CXX)
 
-set(FirstOpenGL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/FirstOpenGL")
+set(FirstOpenGL_ROOT "${PROJECT_SOURCE_DIR}")
+
+# Set build output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+
 
 # Turn on folder usage
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -24,7 +28,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(DevIL REQUIRED)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/FirstOpenGL)
+include_directories(${PROJECT_SOURCE_DIR}/FirstOpenGL)
 
 # FirstOpenGL *.cpp 추가
 file(GLOB FirstOpenGL_CPP
@@ -60,9 +64,8 @@ file(GLOB RotatingCylinder_SRC
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 
 add_executable(FirstOpenGL ${FirstOpenGL_CPP})
-target_link_libraries(FirstOpenGL GLUT::GLUT)
-target_link_libraries(FirstOpenGL OpenGL::GL)
 target_link_libraries(FirstOpenGL GLEW::GLEW)
+target_link_libraries(FirstOpenGL GLUT::GLUT)
 target_link_libraries(FirstOpenGL DevIL::IL DevIL::ILU)
 
 add_executable(FirstOpenGL_FShader ${FirstOpenGL_FShader_SRC})

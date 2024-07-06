@@ -4,8 +4,11 @@ cmake_minimum_required(VERSION 3.10)
 # 프로젝트 이름과 사용 언어 설정
 project(CarGame LANGUAGES CXX)
 
+set(CarGame_ROOT "${PROJECT_SOURCE_DIR}")
 
-set(CarGame_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+# Set build output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+
 
 # Turn on folder usage
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -25,9 +28,9 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(DevIL REQUIRED)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/BaseCodes)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/CarGame0)
+include_directories(${PROJECT_SOURCE_DIR}/BaseCodes)
+include_directories(${PROJECT_SOURCE_DIR}/Include)
+include_directories(${PROJECT_SOURCE_DIR}/CarGame0)
 
 # BaseCodes  *.cpp 추가
 file(GLOB_RECURSE BaseCodes_CPP

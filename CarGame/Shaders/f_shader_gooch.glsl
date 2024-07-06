@@ -1,4 +1,5 @@
 #version 320 es
+precision highp float;
 
 // Gooch Shaing
 // Realtime Rendering 4th Edition Chaper 5.1

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <GLES3/gl3.h>
 #include "GL/glew.h"
 #include "GL/freeglut.h"
 
@@ -73,6 +72,7 @@ R"(
 const GLchar * f_shader_code =
 R"(
 	#version 320 es
+	precision highp float;
 
 	in vec4 fs_color;
 	
@@ -106,8 +106,6 @@ void Display();
 void Timer(int value);
 
 
-
-
 int main(int argc, char** argv)
 {
 
@@ -129,7 +127,7 @@ int main(int argc, char** argv)
 
 	//// 1.4. OpenGL Context와 연결된 윈도우 생성.
 	glutCreateWindow("Computer Graphics");
-	
+
 	//// 1.5. Callback functions 
 	// Ref: http://freeglut.sourceforge.net/docs/api.php#GlobalCallback
 	//      http://freeglut.sourceforge.net/docs/api.php#WindowCallback
@@ -138,7 +136,55 @@ int main(int argc, char** argv)
 	glutDisplayFunc(Display);
 	glutTimerFunc((unsigned int)(1000 /60), Timer, 0);
 
+	//// 1.6. Print Hardware Information
+	{
+		std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
+		std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+	}
 
+
+	/// 1.7. GL MAX values
+	{
+		GLint max_texture_size;
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+		std::cout << "GL_MAX_TEXTURE_SIZE: " << max_texture_size << std::endl;
+
+		GLint max_texture_units;
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units);
+		std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " << max_texture_units << std::endl;
+
+		GLint max_vertex_attribs;
+		glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+		std::cout << "GL_MAX_VERTEX_ATTRIBS: " << max_vertex_attribs << std::endl;
+
+		GLint max_vertex_uniforms;
+		glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &max_vertex_uniforms);
+		std::cout << "GL_MAX_VERTEX_UNIFORM_VECTORS: " << max_vertex_uniforms << std::endl;
+
+		GLint max_fragment_uniforms;
+		glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &max_fragment_uniforms);
+		std::cout << "GL_MAX_FRAGMENT_UNIFORM_VECTORS: " << max_fragment_uniforms << std::endl;
+
+		GLint max_varying_vectors;
+		glGetIntegerv(GL_MAX_VARYING_VECTORS, &max_varying_vectors);
+		std::cout << "GL_MAX_VARYING_VECTORS: " << max_varying_vectors << std::endl;
+
+		GLint max_vertex_texture_units;
+		glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_units);
+		std::cout << "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS: " << max_vertex_texture_units << std::endl;
+
+		GLint max_fragment_texture_units;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_fragment_texture_units);
+		std::cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << max_fragment_texture_units << std::endl;
+
+		GLint max_uniform_block_size;
+		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_block_size);
+		std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE: " << max_uniform_block_size << std::endl;
+
+		GLint max_uniform_buffer_bindings;
+		glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &max_uniform_buffer_bindings);
+		std::cout << "GL_MAX_UNIFORM_BUFFER_BINDINGS: " << max_uniform_buffer_bindings << std::endl;
+	}
 
 
 
@@ -159,15 +205,6 @@ int main(int argc, char** argv)
         std::cerr << "OpenGL ES 3.2 is not supported" << std::endl;
         return -1;
     }
-
-	{
-		std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-		std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-		std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
-		std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-	}
-
-	
 
 
 	//////////////////////////////////////////////////////////////////////////////////////

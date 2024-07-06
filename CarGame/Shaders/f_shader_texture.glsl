@@ -1,4 +1,5 @@
 #version 320 es
+precision highp float;
 
 in vec4 fs_color;
 in vec2 fs_uv;
