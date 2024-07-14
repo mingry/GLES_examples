@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.10)
 
 # 프로젝트 이름과 사용 언어 설정
@@ -30,18 +29,6 @@ find_package(DevIL REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/FirstOpenGL)
 
-# FirstOpenGL *.cpp 추가
-file(GLOB FirstOpenGL_CPP
-    "FirstOpenGL/*.cpp"
-    "FirstOpenGL/*.h"
-)
-
-# FirstOpenGL_FShader *.cpp 추가
-file(GLOB FirstOpenGL_FShader_SRC
-    "FirstOpenGL_FShader/*.cpp"
-    "FirstOpenGL_FShader/*.h"
-)
-
 # RotatingCube2 *.cpp 추가
 file(GLOB RotatingCube2_SRC
     "RotatingCube2/*.cpp"
@@ -63,20 +50,25 @@ file(GLOB RotatingCylinder_SRC
 # preprocess define
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 
-add_executable(FirstOpenGL ${FirstOpenGL_CPP})
+add_executable(FirstOpenGL FirstOpenGL/main_FirstOpenGL.cpp)
 target_link_libraries(FirstOpenGL GLEW::GLEW)
 target_link_libraries(FirstOpenGL GLUT::GLUT)
 target_link_libraries(FirstOpenGL DevIL::IL DevIL::ILU)
 
-add_executable(FirstOpenGL_FShader ${FirstOpenGL_FShader_SRC})
+add_executable(FirstOpenGL_FShader FirstOpenGL_FShader/main_FirstOpenGL_FShader.cpp)
 target_link_libraries(FirstOpenGL_FShader GLUT::GLUT)
 target_link_libraries(FirstOpenGL_FShader OpenGL::GL)
 target_link_libraries(FirstOpenGL_FShader GLEW::GLEW)
 
-add_executable(RotatingCube RotatingCube/main_RotatingCube.cpp)
-target_link_libraries(RotatingCube GLUT::GLUT)
-target_link_libraries(RotatingCube OpenGL::GL)
-target_link_libraries(RotatingCube GLEW::GLEW)
+add_executable(RotatingCube0 RotatingCube0/main_RotatingCube0.cpp)
+target_link_libraries(RotatingCube0 GLUT::GLUT)
+target_link_libraries(RotatingCube0 OpenGL::GL)
+target_link_libraries(RotatingCube0 GLEW::GLEW)
+
+add_executable(RotatingCube1 RotatingCube1/main_RotatingCube1.cpp)
+target_link_libraries(RotatingCube1 GLUT::GLUT)
+target_link_libraries(RotatingCube1 OpenGL::GL)
+target_link_libraries(RotatingCube1 GLEW::GLEW)
 
 add_executable(RotatingCube2 ${RotatingCube2_SRC})
 target_link_libraries(RotatingCube2 GLUT::GLUT)

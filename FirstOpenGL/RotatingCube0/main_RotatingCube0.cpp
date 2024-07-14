@@ -9,162 +9,162 @@ GLuint g_window_w = 500;
 GLuint g_window_h = 500;
 
 
+
 //////////////////////////////////////////////////////////////////////
 //// Define Mesh Model
 //////////////////////////////////////////////////////////////////////
-const int g_num_vertices = 4;
-const int g_num_triangles = 2;
+const int g_num_vertices = 8;
+const int g_num_triangles = 12;
 
 GLfloat m_positions[g_num_vertices * 3] =
-{ -0.9f,  -0.9f,  0.f
-, 0.9f, -0.9f,  0.f
-, 0.9f, 0.9f, 0.f
-, -0.9f,  0.9f, 0.f
+{  0.25f, 0.25f,  0.25f,
+   0.25f, 0.25f, -0.25f,
+  -0.25f, 0.25f, -0.25f,
+  -0.25f, 0.25f,  0.25f,
+ 						
+   0.25f, -0.25f,  0.25f,
+   0.25f, -0.25f, -0.25f,
+  -0.25f, -0.25f, -0.25f,
+  -0.25f, -0.25f,  0.25f,
 };
 
-GLfloat m_normals[g_num_vertices * 3] =
-{ 0.f, 0.f, 1.f
-, 0.f, 0.f, 1.f
-, 0.f, 0.f, 1.f
-, 0.f, 0.f, 1.f
-};
-
-GLfloat m_colors[g_num_vertices * 4] =
-{ 1.f, 0.f, 0.f, 1.f
-, 0.f, 1.f, 0.f, 1.f
-, 0.f, 0.f, 1.f, 1.f
-, 1.f, 1.f, 0.f, 1.f
-};
-
-GLfloat m_uvs[g_num_vertices * 2] =
-{ 0.f, 0.f
-, 0.f, 1.f
-, 1.f, 0.f
-, 1.f, 1.f
-};
 
 GLuint m_indices[g_num_triangles * 3] =
 {
-	0, 1, 2,
-	0, 2, 3
+    0, 1, 2,
+    0, 2, 3,
+
+    0, 3, 7,
+    0, 7, 4,
+
+    0, 4, 5,
+    0, 5, 1,
+
+    6, 2, 1,
+    6, 1, 5,
+
+    6, 5, 4,
+    6, 4, 7,
+   
+    6, 7, 3,
+    6, 3, 2	
 };
 
+//////////////////////////////////////////////////////////////////////
+//// Animation Parameters
+//////////////////////////////////////////////////////////////////////
+
+float g_rot_angle = 0.f;
+glm::vec3 g_rot_axis = glm::normalize(glm::vec3(1.f, 1.f, 1.f));
 
 //////////////////////////////////////////////////////////////////////
 //// Define Shader Programs
 //////////////////////////////////////////////////////////////////////
+
+// #define CPU_ROTATING
+// #define GPU_ROTATING_MODEL_MATRIX
+#define GPU_ROTATING_AXIS_ANGLE
+
 
 GLuint f_shader_id;
 GLuint v_shader_id;
 GLuint s_program_id;
 
 // vertex shader source code
+
+#ifdef CPU_ROTATING
 const GLchar * v_shader_source =
 R"(
 	#version 320 es
 
 	layout (location=0) in vec3 vs_position;
-	layout (location=1) in vec3 vs_normal;
-	layout (location=2) in vec4 vs_color;
-	layout (location=3) in vec2 vs_uv;
-
-	out vec4 fs_color;
-	out vec2 fs_uv;
 
 	void main()
 	{
 		gl_Position = vec4(vs_position, 1.f);
-		fs_color = vs_color;
-		fs_uv = vs_uv;
 	}
 		
 )";
 
+#elif defined GPU_ROTATING_MODEL_MATRIX
 
-// fragament shader source code
-// https://thebookofshaders.com/examples/
-// https://www.shadertoy.com/
-const GLchar * f_shader_code =
+const GLchar * v_shader_source =
 R"(
 	#version 320 es
 
+	layout (location=0) in vec3 vs_position;
+
+	uniform mat4 model_matrix;
+
+	void main()
+	{
+		gl_Position = model_matrix * vec4(vs_position, 1.f);
+	}
+		
+)";
+
+#elif defined GPU_ROTATING_AXIS_ANGLE
+
+const GLchar * v_shader_source =
+R"(
+	#version 320 es
+
+	layout (location=0) in vec3 vs_position;
+
+	uniform float r_angle;
+	uniform vec3 r_axis;
+
+	mat4 rotationMatrix(vec3 axis, float angle)
+	{
+    	axis = normalize(axis);
+    	float s = sin(angle);
+    	float c = cos(angle);
+    	float oc = 1.0 - c;
+    
+    	return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                	oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                	oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                	0.0,                                0.0,                                0.0,                                1.0);
+	}
+
+	void main()
+	{
+		mat4 R = rotationMatrix(r_axis, r_angle);
+		gl_Position = R * vec4(vs_position, 1.f);
+	}
+		
+)";
+
+#endif
+
+// fragment shader source code
+const GLchar * f_shader_code =
+R"(
+	#version 320 es
 	precision highp float;
 
-	in vec4 fs_color;
-	in vec2 fs_uv;	
-
-	uniform float iTime;// = 10.0;
-	uniform vec2 iResolution;// = vec2(500.0, 500.0);
 	layout (location = 0) out vec4 color;
 
+	in vec3 fs_pos;
 	
+	void main()
+	{
+		color = vec4(1.f, 0.f, 0.f, 1.f);
 
-	const float PI=3.14159265358979323846;
-	const float value=0.0;
+		// // a circle
+		// if (length(gl_FragCoord.xy - vec2(250.f, 250.f)) < 50.f)
+		// {
+		// 	color = vec4(0.f, 1.f, 0.f, 1.f);
+		// }
 
-	float rand(in vec2 p,in float t)
-		{
-		return fract(sin(dot(p+mod(t,1.0),vec2(12.9898,78.2333)))*43758.5453);
-		}
+		// // flat shading
+		// vec3 L = normalize(vec3(0.5f, 0.5f, 1.f));
+		// vec3 N = normalize( cross( dFdx(fs_pos), dFdy(fs_pos)) );
+		// float diffuse = max(0.2f, dot(L, N));
+		// color = vec4(diffuse, diffuse, diffuse, 1.f);
 
-	vec2 rotate(vec2 k,float t)
-		{
-		return vec2(cos(t)*k.x-sin(t)*k.y,sin(t)*k.x+cos(t)*k.y);
-		}
-
-	float scene1(vec3 p)
-		{
-		float speed=iTime*0.5;
-		float ground=dot(p,vec3(0.0,1.0,0.0))+0.75;
-		float t1=length(abs(mod(p.xyz,2.0)-1.0))-1.35+0.05*cos(PI*p.x*4.0)+0.05*sin(PI*p.z*4.0);	// structure
-		float t3=length(max(abs(mod(p.xyz,2.0)-1.0).xz-1.0,0.5))-0.075+0.1*cos(p.y*36.0);			// structure slices
-		float t5=length(abs(mod(p.xyz,0.5))-0.25)-0.975;
-		float bubble_w=0.8+0.2*cos(PI*p.z)+0.2*cos(PI*p.x);
-		float bubble=length(mod(p.xyz,0.125)-0.0625)-bubble_w;
-		float hole_w=0.05;
-		float hole=length(abs(mod(p.xz,1.0)-0.5))-hole_w;
-		float tube_p=2.0-0.25*sin(PI*p.z*0.5);
-		float tube_v=PI*8.0;
-		float tube_b=tube_p*0.02;
-		float tube_w=tube_b+tube_b*cos(p.x*tube_v)*sin(p.y*tube_v)*cos(p.z*tube_v)+tube_b*sin(PI*p.z+speed*4.0);
-		float tube=length(abs(mod(p.xy,tube_p)-tube_p*0.5))-tube_w;
-		return min(max(min(-t1,max(-hole-t5*0.375,ground+bubble)),t3+t5),tube);
-		}
-
-	void mainImage( out vec4 fragColor, in vec2 fragCoord )
-		{
-		float speed=iTime*0.5;
-		float ground_x=1.5*cos(PI*speed*0.125);
-		float ground_y=4.0-3.0*sin(PI*speed*0.125)+0.125*value;
-		float ground_z=-1.0-speed;
-		vec2 position=fragCoord.xy/iResolution.xy;        
-		vec2 p=-1.0+2.0*position;
-		vec3 dir=normalize(vec3(p*vec2(1.625,1.0),0.75));	// screen ratio (x,y) fov (z)
-		dir.yz=rotate(dir.yz,PI*0.25*sin(PI*speed*0.125)-value*0.25);	// rotation x
-		dir.zx=rotate(dir.zx,PI*cos(-PI*speed*0.05));		// rotation y
-		dir.xy=rotate(dir.xy,PI*0.125*cos(PI*speed*0.125));	// rotation z
-		vec3 ray=vec3(ground_x,ground_y,ground_z);
-		float t=0.0;
-		const int ray_n=96;
-		for(int i=0;i<ray_n;i++)
-			{
-			float k=scene1(ray+dir*t);
-			if(abs(k)<0.005) break;
-			t+=k*0.5;
-			}
-		vec3 hit=ray+dir*t;
-		vec2 h=vec2(-0.02,0.01); // light
-		vec3 n=normalize(vec3(scene1(hit+h.xyy),scene1(hit+h.yxx),scene1(hit+h.yyx)));
-		float c=(n.x+n.y+n.z)*0.1;
-		vec3 color=vec3(c,c,c)-t*0.0625;
-		//color*=0.6+0.4*rand(vec2(t,t),iTime); // noise!
-		fragColor=vec4(vec3(c+t*0.08,c+t*0.02,c*1.5-t*0.01)+color*color,1.0);
-		}
+	}
 		
-		void main()
-		{
-			mainImage(color, gl_FragCoord.xy);
-		}
 )";
 
 //////////////////////////////////////////////////////////////////////
@@ -172,9 +172,6 @@ R"(
 //////////////////////////////////////////////////////////////////////
 GLuint g_vao_id;
 GLuint g_vbo_position_id;
-GLuint g_vbo_normal_id;
-GLuint g_vbo_color_id;
-GLuint g_vbo_uv_id;
 GLuint g_index_buffer_id;
 
 // Index Buffer Object
@@ -186,6 +183,7 @@ GLuint index_buffer_id;
 //////////////////////////////////////////////////////////////////////
 void Reshape(int w, int h);
 void Display();
+void Keyboard(unsigned char key, int x, int y);
 void Timer(int value);
 
 
@@ -193,7 +191,8 @@ void Timer(int value);
 
 int main(int argc, char** argv)
 {
-	
+
+
 	//////////////////////////////////////////////////////////////////////////////////////
 	//// 1. freeglut 초기화, 원도우 생성하기. 
 	////    Ref: https://en.wikibooks.org/wiki/OpenGL_Programming/Installation/GLUT
@@ -218,6 +217,7 @@ int main(int argc, char** argv)
 	//      https://www.opengl.org/resources/libraries/glut/spec3/node45.html
 	glutReshapeFunc(Reshape);
 	glutDisplayFunc(Display);
+	glutKeyboardFunc(Keyboard);
 	glutTimerFunc((unsigned int)(1000 /60), Timer, 0);
 
 
@@ -250,7 +250,7 @@ int main(int argc, char** argv)
 
 	//// Vertex shader program
 	//// 3.1. Vertex shader 객체 생성.
-	v_shader_id = glCreateShader(GL_VERTEX_SHADER);
+	GLuint v_shader_id = glCreateShader(GL_VERTEX_SHADER);
 
 	//// 3.2. Vertex shader 소스코드 입력.
 	glShaderSource(v_shader_id, 1, &v_shader_source, NULL);
@@ -279,7 +279,7 @@ int main(int argc, char** argv)
 
 	//// Fragment shader program 
 	//// 3.5. Fragment shader 객체 생성.
-	f_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint f_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
 
 	//// 3.6. Fragment shader 소스코드 입력.
 	glShaderSource(f_shader_id, 1, &f_shader_code, NULL);
@@ -320,6 +320,9 @@ int main(int argc, char** argv)
 	glUseProgram(s_program_id);
 
 
+	// Initialize shading_mode to 1
+	int shading_mode_loc = glGetUniformLocation(s_program_id, "shading_mode");
+	glUniform1i(shading_mode_loc, 1);
 
 
 
@@ -328,13 +331,11 @@ int main(int argc, char** argv)
 	//// 4. OpenGL 설정
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	glViewport(0, 0, (GLsizei)g_window_w, (GLsizei)g_window_h);
+	glViewport(0,0, (GLsizei)g_window_w, (GLsizei)g_window_h);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-
-	
 
 	
 
@@ -361,59 +362,20 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(0);
 
 
-	//// 5.5. vertex normal vectors 저장을 위한 VBO 생성 및 바인딩.
-	glGenBuffers(1, &g_vbo_normal_id);
-	glBindBuffer(GL_ARRAY_BUFFER, g_vbo_normal_id);
-
-	//// 5.6. vertex positions 데이터 입력.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * g_num_vertices, m_normals, GL_STATIC_DRAW);
-
-	//// 5.7. 현재 바인딩되어있는 VBO를 shader program과 연결
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
-
-
-	//// 5.8. vertex colors 저장을 위한 VBO 생성 및 바인딩.
-	glGenBuffers(1, &g_vbo_color_id);
-	glBindBuffer(GL_ARRAY_BUFFER, g_vbo_color_id);
-
-	//// 5.9. vertex positions 데이터 입력.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * g_num_vertices, m_colors, GL_STATIC_DRAW);
-
-	//// 5.10. 현재 바인딩되어있는 VBO를 shader program과 연결
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(2);
-
-	//// 5.8. vertex colors 저장을 위한 VBO 생성 및 바인딩.
-	glGenBuffers(1, &g_vbo_uv_id);
-	glBindBuffer(GL_ARRAY_BUFFER, g_vbo_uv_id);
-
-	//// 5.9. vertex positions 데이터 입력.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * g_num_vertices, m_uvs, GL_STATIC_DRAW);
-
-	//// 5.10. 현재 바인딩되어있는 VBO를 shader program과 연결
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(3);
-
-
-	//// 5.11. Index Buffer 객체 생성 및 데이터 입력
+	//// 5.5. Index Buffer 객체 생성 및 데이터 입력
 	glGenBuffers(1, &g_index_buffer_id);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_index_buffer_id);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 3 * g_num_triangles, m_indices, GL_STATIC_DRAW);
-
-	
 
 
 	//// 1.6. freeglut 윈도우 이벤트 처리 시작. 윈도우가 닫힐때까지 후한루프 실행.
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 	glutMainLoop();
 
+
 	//// 5.12. VAO, VBO 메모리 해제. 
 	glDeleteBuffers(1, &g_vbo_position_id);
-	glDeleteBuffers(1, &g_vbo_color_id);
-	glDeleteBuffers(1, &g_vbo_normal_id);
 	glDeleteVertexArrays(1, &g_vao_id);
-
 
 	return 0;
 }
@@ -449,6 +411,7 @@ void Display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+	// Cube 그린다.
 	glBindVertexArray(g_vao_id);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_index_buffer_id);
 	glDrawElements(GL_TRIANGLES, g_num_triangles * 3, GL_UNSIGNED_INT, 0);
@@ -467,8 +430,53 @@ ref: https://www.opengl.org/resources/libraries/glut/spec3/node64.html#SECTION00
 */
 void Timer(int value)
 {
-	glUniform1f( glGetUniformLocation(s_program_id, "iTime"),
-		(float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f);
+	g_rot_angle += 0.01f;
+
+	// rotate all vertices by g_rot_angle along g_rot_axis
+	#ifdef CPU_ROTATING
+	{
+		// CPU computing 
+		// use with v_shader_source
+
+		glm::mat3 R = glm::mat3(glm::rotate(glm::mat4(1.f), g_rot_angle, g_rot_axis));
+		
+		float *rotated_positions = new float[g_num_vertices * 3];
+
+		for (int i = 0; i < g_num_vertices; i++)
+		{
+			glm::vec3 pos = glm::vec3(m_positions[i * 3], m_positions[i * 3 + 1], m_positions[i * 3 + 2]);
+			pos = R * pos;
+			rotated_positions[i * 3] = pos.x;
+			rotated_positions[i * 3 + 1] = pos.y;
+			rotated_positions[i * 3 + 2] = pos.z;
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, g_vbo_position_id);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * g_num_vertices, rotated_positions, GL_STATIC_DRAW);
+	}
+
+	#elif defined GPU_ROTATING_MODEL_MATRIX
+	{
+		// GPU computing 
+		// passing rotation matrix to the shader
+
+		glm::mat4 R = glm::rotate(glm::mat4(1.f), g_rot_angle, g_rot_axis);
+
+		int m_model_loc = glGetUniformLocation(s_program_id, "model_matrix");
+		glUniformMatrix4fv(m_model_loc, 1, GL_FALSE, glm::value_ptr(R));
+	}
+
+	#elif defined GPU_ROTATING_AXIS_ANGLE
+	{
+		// GPU computing
+		// passing rotation axis and angle to the shader
+
+		glUniform1f(glGetUniformLocation(s_program_id, "r_angle"), g_rot_angle);
+		glUniform3fv(glGetUniformLocation(s_program_id, "r_axis"), 1, glm::value_ptr(g_rot_axis));
+	}
+
+	#endif
+
 	// glutPostRedisplay는 가능한 빠른 시간 안에 전체 그림을 다시 그릴 것을 시스템에 요청한다.
 	// 결과적으로 Display() 함수가 호출 된다.
 	glutPostRedisplay();
@@ -492,16 +500,50 @@ void Reshape(int w, int h)
 	//  w : window width   h : window height
 	g_window_w = w;
 	g_window_h = h;
-
-	glViewport(0, 0, g_window_w, g_window_h);
-	glUniform2f(
-		glGetUniformLocation(s_program_id, "iResolution")
-		, (float)g_window_w, (float)g_window_h);
+	glViewport(0, 0, (GLsizei)g_window_w, (GLsizei)g_window_h);
 
 	glutPostRedisplay();
 }
 
+/**
+Keyboard: 키보드 입력이 있을 때마다 자동으로 호출되는 함수.
+@param key는 눌려진 키보드의 문자값.
+@param x,y는 현재 마우스 포인터의 좌표값.
+ref: https://www.opengl.org/resources/libraries/glut/spec3/node49.html#SECTION00084000000000000000
 
+*/
+void Keyboard(unsigned char key, int x, int y)
+{
+	// keyboard '1' 이 눌려졌을 때.
+	if (key == '1')
+	{
+		// Fragment shader에 정의 되어있는 'shading_mode' 변수의 location을 받아온다.
+		int shading_mode_loc = glGetUniformLocation(s_program_id, "shading_mode");
+
+		// 'shading_mode' 값으로 1을 설정.
+		glUniform1i(shading_mode_loc, 1);
+
+
+		// glutPostRedisplay는 가능한 빠른 시간 안에 전체 그림을 다시 그릴 것을 시스템에 요청한다.
+		// 결과적으로 Display() 함수를 호출하게 된다.
+		glutPostRedisplay();
+	}
+
+	// keyboard '2' 가 눌려졌을 때.
+	else if (key == '2')
+	{
+		// Fragment shader에 정의 되어있는 'shading_mode' 변수의 location을 받아온다.
+		int shading_mode_loc = glGetUniformLocation(s_program_id, "shading_mode");
+
+		// 'shading_mode' 값으로 2를 설정.
+		glUniform1i(shading_mode_loc, 2);
+
+
+		// glutPostRedisplay는 가능한 빠른 시간 안에 전체 그림을 다시 그릴 것을 시스템에 요청한다.
+		// 결과적으로 Display() 함수를 호출하게 된다.
+		glutPostRedisplay();
+	}
+}
 
 
 
