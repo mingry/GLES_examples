@@ -31,11 +31,18 @@ find_package(GLM REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/Slerp)
 
-# FirstOpenGL *.cpp 추가
+# Slerp *.cpp 추가
 file(GLOB Slerp_CPP
     "Slerp/*.cpp"
     "Slerp/*.h"
 )
+
+# CatmullRom *.cpp 추가
+file(GLOB CatmullRom_CPP
+    "CatmullRom/*.cpp"
+    "CatmullRom/*.h"
+)
+
 
 # preprocess define
 add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
@@ -43,3 +50,7 @@ add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 add_executable(Slerp ${Slerp_CPP})
 target_link_libraries(Slerp GLEW::GLEW)
 target_link_libraries(Slerp GLUT::GLUT)
+
+add_executable(CatmullRom ${CatmullRom_CPP})
+target_link_libraries(CatmullRom GLEW::GLEW)
+target_link_libraries(CatmullRom GLUT::GLUT)

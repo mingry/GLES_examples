@@ -4,7 +4,8 @@
 #include "glm/ext.hpp"
 #include "InitShader.h"
 #include "SObj.h"
-#include "SlerpApp.h"
+#include "CatmullRomApp.h"
+#include "QCatmullRom.h"
 #include <vector>
 #include <iostream>
 
@@ -41,7 +42,7 @@ void InitOpenGL()
 	//// 3. Shader Programs 등록
 	////    Ref: https://www.khronos.org/opengl/wiki/Shader_Compilation
 	//////////////////////////////////////////////////////////////////////////////////////
-	s_program_id = CreateFromFiles("../Slerp/v_shader.glsl", "../Slerp/f_shader.glsl");
+	s_program_id = CreateFromFiles("../CatmullRom/v_shader.glsl", "../CatmullRom/f_shader.glsl");
 	glUseProgram(s_program_id);
 
 	// Initialize shading_mode to 1
@@ -56,12 +57,26 @@ void InitOpenGL()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// Key values
-	g_vs.push_back(glm::vec3(-1.f, 0.f, 0.f));
-	g_vs.push_back(glm::vec3(1.f, 0.f, 0.f));
-
-	g_qs.push_back((glm::quat)glm::rotate(glm::radians(20.f), glm::vec3(0.f, 0.f, 1.f)));
+	// Key1 
+	g_vs.push_back(glm::vec3(-4.f, 0.f, 0.f));
 	g_qs.push_back(glm::quat(-1.f, 0.f, 0.f, 0.f));
+
+	// Key2
+	g_vs.push_back(glm::vec3(-2.f, 1.f, 0.f));
+	g_qs.push_back((glm::quat)glm::rotate(glm::radians(180.f), glm::normalize(glm::vec3(1.f, 1.f, 1.f))));
+
+	// Key3
+	g_vs.push_back(glm::vec3(0.f, -1.f, 0.f));
+	g_qs.push_back((glm::quat)glm::rotate(glm::radians(50.f), glm::normalize(glm::vec3(0.f, 0.f, 1.f))));
+
+	// Key4
+	g_vs.push_back(glm::vec3(2.f, 1.f, 0.f));
+	g_qs.push_back((glm::quat)glm::rotate(glm::radians(140.f), glm::normalize(glm::vec3(0.f, 1.f, 1.f))));
+
+	// Key5
+	g_vs.push_back(glm::vec3(4.f, 0.f, 0.f));
+	g_qs.push_back((glm::quat)glm::rotate(glm::radians(20.f), glm::normalize(glm::vec3(1.f, 0.f, 1.f))));
+
 
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +140,9 @@ void Display()
 
 
 	// Projection Transform Matrix 설정.
-	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.f), (float)g_window_w/g_window_h, 0.01f, 1000.f);
+	// glm::mat4 projection_matrix = glm::perspective(glm::radians(45.f), (float)g_window_w/g_window_h, 0.01f, 1000.f);
+	float aspect = (float)g_window_w / g_window_h;
+	glm::mat4 projection_matrix = glm::ortho(-4.f*aspect, 4.f*aspect, -4.f, 4.f, 0.01f, 1000.f);
 	glUniformMatrix4fv(m_proj_loc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 
 	// Camera Transform Matrix 설정.
@@ -133,7 +150,7 @@ void Display()
 	glUniformMatrix4fv(m_view_loc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 
 	// keys
-	for ( int i=0; i<2; i++ )
+	for ( int i=0; i<g_vs.size(); i++ )
 	{
 		glm::mat4 M = glm::translate(glm::mat4(1.f), g_vs[i]) * glm::mat4_cast(g_qs[i]);
 
@@ -159,14 +176,24 @@ ref: https://www.opengl.org/resources/libraries/glut/spec3/node64.html#SECTION00
 */
 void Timer(int value)
 {
-	float scaled_t = 0.5f * t;
-	int time_int = (int)scaled_t;
-	float time_frac = scaled_t - time_int;
+	int key_num = g_vs.size();
+
+	float scaled_t = 0.7f * t;
+
+	int cur_p_id = (int)(scaled_t);
+	float time_frac = scaled_t - cur_p_id;
+	cur_p_id = cur_p_id % (key_num - 1);
+
+	int i0 = glm::max(0, cur_p_id - 1);
+	int i1 = cur_p_id;
+	int i2 = glm::min(key_num - 1, cur_p_id + 1);
+	int i3 = glm::min(key_num - 1, cur_p_id + 2);
+
 	 
 	// update
-	g_cur_q = glm::mix(g_qs[0], g_qs[1], time_frac);
-	// g_cur_q = glm::slerp(g_qs[0], g_qs[1], time_frac);
-	g_cur_v = glm::lerp(g_vs[0], g_vs[1], time_frac);
+	g_cur_v = glm::catmullRom(g_vs[i0], g_vs[i1], g_vs[i2], g_vs[i3], time_frac);
+	g_cur_q = glm::catmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
+	// g_cur_q = QCatmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
 
 	t += 0.01f;
 
