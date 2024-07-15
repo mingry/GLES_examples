@@ -193,7 +193,7 @@ void Timer(int value)
 	// update
 	g_cur_v = glm::catmullRom(g_vs[i0], g_vs[i1], g_vs[i2], g_vs[i3], time_frac);
 	g_cur_q = glm::catmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
-	// g_cur_q = QCatmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
+	//g_cur_q = QCatmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
 
 	t += 0.01f;
 

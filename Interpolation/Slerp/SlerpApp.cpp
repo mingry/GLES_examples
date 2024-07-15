@@ -136,7 +136,6 @@ void Display()
 	for ( int i=0; i<2; i++ )
 	{
 		glm::mat4 M = glm::translate(glm::mat4(1.f), g_vs[i]) * glm::mat4_cast(g_qs[i]);
-
 		glUniformMatrix4fv(m_model_loc, 1, GL_FALSE, glm::value_ptr(M));
 		DrawS();
 	}
@@ -164,9 +163,10 @@ void Timer(int value)
 	float time_frac = scaled_t - time_int;
 	 
 	// update
-	g_cur_q = glm::mix(g_qs[0], g_qs[1], time_frac);
-	// g_cur_q = glm::slerp(g_qs[0], g_qs[1], time_frac);
-	g_cur_v = glm::lerp(g_vs[0], g_vs[1], time_frac);
+	// g_cur_q = glm::mix(g_qs[0], g_qs[1], time_frac);
+	g_cur_q = glm::slerp(g_qs[0], g_qs[1], time_frac);
+	// g_cur_v = glm::lerp(g_vs[0], g_ivs[1], time_frac);
+	g_cur_v = 0.5f*(g_vs[0] + g_vs[1]);
 
 	t += 0.01f;
 

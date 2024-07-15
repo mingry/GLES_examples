@@ -44,6 +44,11 @@ file(GLOB_RECURSE CarGame0_SRC
     "CarGame0/*.h"
 )
 
+file(GLOB CarGamePBR_SRC
+    "CarGamePBR/*.cpp"
+    "CarGamePBR/*.h"
+)
+
 file(GLOB_RECURSE CarGameGooch_SRC
     "CarGameGooch/*.cpp"
     "CarGameGooch/*.h"  
@@ -73,6 +78,11 @@ add_executable(CarGame0 ${CarGame0_SRC} ${BaseCodes_CPP})
 target_link_libraries(CarGame0 GLUT::GLUT)
 target_link_libraries(CarGame0 OpenGL::GL)
 target_link_libraries(CarGame0 GLEW::GLEW)
+
+add_executable(CarGamePBR ${CarGamePBR_SRC} ${BaseCodes_CPP})
+target_link_libraries(CarGamePBR GLUT::GLUT)
+target_link_libraries(CarGamePBR OpenGL::GL)
+target_link_libraries(CarGamePBR GLEW::GLEW)
 
 # 실행 파일 생성
 add_executable(CarGameGooch ${CarGameGooch_SRC} ${BaseCodes_CPP})

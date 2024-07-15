@@ -476,7 +476,6 @@ void Display()
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 	// Vertex shader 의 matrix 변수들의 location을 받아온다.
 	int m_proj_loc = glGetUniformLocation(s_program_id, "proj_matrix");
 	int m_view_loc = glGetUniformLocation(s_program_id, "view_matrix");
@@ -488,7 +487,7 @@ void Display()
 	glUniformMatrix4fv(m_proj_loc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 
 	// Camera Transform Matrix 설정.
-	glm::mat4 view_matrix = glm::lookAt(glm::vec3(2.f, 5.5f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 view_matrix = glm::lookAt(glm::vec3(2.f, 1.5f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 	glUniformMatrix4fv(m_view_loc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 
 

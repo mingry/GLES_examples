@@ -25,10 +25,14 @@ void InitGround2()
 		0.f, 1.f, 0.f };
 
 	float colors[g_ground2_vertex_num*4] = 
-	{ 1.f, 0.7f, 0.f, 1.f,
-		0.f, 1.f, 0.f, 1.f,
-		1.f, 0.7f, 0.f, 1.f,
-		0.f, 0.7f, 1.f, 1.f };
+	{ 0.1f, 0.1f, 0.1f, 1.f,
+		0.1f, 0.1f, 0.1f, 1.f,
+		0.1f, 0.1f, 0.1f, 1.f,
+		0.1f, 0.1f, 0.1f, 1.f };
+	// { 1.f, 0.7f, 0.f, 1.f,
+	// 	0.f, 1.f, 0.f, 1.f,
+	// 	1.f, 0.7f, 0.f, 1.f,
+	// 	0.f, 0.7f, 1.f, 1.f };
 
 	unsigned int indices[6] = {0, 1, 2,  2, 3, 0};
 

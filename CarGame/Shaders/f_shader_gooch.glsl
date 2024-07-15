@@ -10,7 +10,7 @@ in vec3 fs_eye_dir;
 
 layout (location = 0) out vec4 color;
 
-uniform vec3 light_dir;	// Directional Light ���� ����.
+uniform vec3 light_dir;	// Directional Light
 
 
 void main()

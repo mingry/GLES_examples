@@ -2,7 +2,6 @@
 #include "GL/glew.h"
 #include "GL/freeglut.h"
 
-
 GLuint g_window_w = 500;
 GLuint g_window_h = 500;
 
@@ -68,7 +67,7 @@ R"(
 		
 )";
 
-// fragament shader source code
+// fragment shader source code
 const GLchar * f_shader_code =
 R"(
 	#version 320 es
@@ -312,7 +311,6 @@ int main(int argc, char** argv)
 	glGenVertexArrays(1, &g_vao_id);
 	glBindVertexArray(g_vao_id);
 
-	
 	//// 5.2. vertex positions 저장을 위한 VBO 생성 및 바인딩.
 	glGenBuffers(1, &g_vbo_position_id);
 	glBindBuffer(GL_ARRAY_BUFFER, g_vbo_position_id);
@@ -420,7 +418,6 @@ ref: https://www.opengl.org/resources/libraries/glut/spec3/node64.html#SECTION00
 */
 void Timer(int value)
 {
-
 	// glutPostRedisplay는 가능한 빠른 시간 안에 전체 그림을 다시 그릴 것을 시스템에 요청한다.
 	// 결과적으로 Display() 함수가 호출 된다.
 	glutPostRedisplay();

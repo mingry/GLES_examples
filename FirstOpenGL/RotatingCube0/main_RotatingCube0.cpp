@@ -62,8 +62,8 @@ glm::vec3 g_rot_axis = glm::normalize(glm::vec3(1.f, 1.f, 1.f));
 //////////////////////////////////////////////////////////////////////
 
 // #define CPU_ROTATING
-// #define GPU_ROTATING_MODEL_MATRIX
-#define GPU_ROTATING_AXIS_ANGLE
+#define GPU_ROTATING_MODEL_MATRIX
+// #define GPU_ROTATING_AXIS_ANGLE
 
 
 GLuint f_shader_id;
@@ -95,10 +95,12 @@ R"(
 	layout (location=0) in vec3 vs_position;
 
 	uniform mat4 model_matrix;
+	out vec3 fs_pos;
 
 	void main()
 	{
 		gl_Position = model_matrix * vec4(vs_position, 1.f);
+		fs_pos = vec3(model_matrix * vec4(vs_position, 1.f));
 	}
 		
 )";
@@ -157,11 +159,11 @@ R"(
 		// 	color = vec4(0.f, 1.f, 0.f, 1.f);
 		// }
 
-		// // flat shading
-		// vec3 L = normalize(vec3(0.5f, 0.5f, 1.f));
-		// vec3 N = normalize( cross( dFdx(fs_pos), dFdy(fs_pos)) );
-		// float diffuse = max(0.2f, dot(L, N));
-		// color = vec4(diffuse, diffuse, diffuse, 1.f);
+		// flat shading
+		vec3 L = normalize(vec3(0.5f, 0.5f, 1.f));
+		vec3 N = normalize( cross( dFdx(fs_pos), dFdy(fs_pos)) );
+		float diffuse = max(0.2f, dot(L, N));
+		color = vec4(diffuse, diffuse, diffuse, 1.f);
 
 	}
 		
