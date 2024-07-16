@@ -54,6 +54,11 @@ file(GLOB_RECURSE CarGameGooch_SRC
     "CarGameGooch/*.h"  
 )
 
+file(GLOB CarGamePostPro_SRC
+    "CarGamePostPro/*.cpp"
+    "CarGamePostPro/*.h"
+)
+
 file(GLOB_RECURSE CarGameTexture_SRC
     "CarGameTexture/*.cpp"
     "CarGameTexture/*.h"
@@ -89,6 +94,13 @@ add_executable(CarGameGooch ${CarGameGooch_SRC} ${BaseCodes_CPP})
 target_link_libraries(CarGameGooch GLUT::GLUT)
 target_link_libraries(CarGameGooch OpenGL::GL)
 target_link_libraries(CarGameGooch GLEW::GLEW)
+
+add_executable(CarGamePostPro ${CarGamePostPro_SRC} ${BaseCodes_CPP})
+target_link_libraries(CarGamePostPro GLUT::GLUT)
+target_link_libraries(CarGamePostPro OpenGL::GL)
+target_link_libraries(CarGamePostPro GLEW::GLEW)
+target_link_libraries(CarGamePostPro DevIL::IL DevIL::ILU)
+
 
 # 실행 파일 생성
 add_executable(CarGameTexture ${CarGameTexture_SRC} ${BaseCodes_CPP})

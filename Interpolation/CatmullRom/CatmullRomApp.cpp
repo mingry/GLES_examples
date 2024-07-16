@@ -153,7 +153,6 @@ void Display()
 	for ( int i=0; i<g_vs.size(); i++ )
 	{
 		glm::mat4 M = glm::translate(glm::mat4(1.f), g_vs[i]) * glm::mat4_cast(g_qs[i]);
-
 		glUniformMatrix4fv(m_model_loc, 1, GL_FALSE, glm::value_ptr(M));
 		DrawS();
 	}
@@ -192,8 +191,8 @@ void Timer(int value)
 	 
 	// update
 	g_cur_v = glm::catmullRom(g_vs[i0], g_vs[i1], g_vs[i2], g_vs[i3], time_frac);
-	g_cur_q = glm::catmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
-	//g_cur_q = QCatmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
+	// g_cur_q = glm::catmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
+	g_cur_q = QCatmullRom(g_qs[i0], g_qs[i1], g_qs[i2], g_qs[i3], time_frac);
 
 	t += 0.01f;
 

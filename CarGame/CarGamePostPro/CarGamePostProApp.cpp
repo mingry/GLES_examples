@@ -2,7 +2,7 @@
 #include "GL/freeglut.h"
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
-#include "CarGameDoFApp.h"
+#include "CarGamePostProApp.h"
 #include "../BaseCodes/Camera.h"
 #include "../BaseCodes/GroundObj2.h"
 #include "../BaseCodes/InitShader.h"
@@ -49,12 +49,13 @@ float g_car_speed = 0;			          // 속도 (초당 이동 거리)
 float g_car_rotation_y = 0;		          // 현재 방향 (y축 회전)
 float g_car_angular_speed = 0;	          // 회전 속도 (각속도 - 초당 회전 각)
 
+
 //////////////////////////////////////////////////////////////////////
 //// Frame Buffer Object
 //////////////////////////////////////////////////////////////////////
 GLuint g_fbo;
 GLuint g_frame_tex;
-GLuint g_depth_tex;
+GLuint g_frame_rbo;
 GLfloat g_aspect;
 
 void GenFrameBuffer() {
@@ -70,16 +71,12 @@ void GenFrameBuffer() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_frame_tex, 0);
-
-    // create a texture for depth attachment
-	glGenTextures(1, &g_depth_tex);
-	glBindTexture(GL_TEXTURE_2D, g_depth_tex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, g_window_w, g_window_h, 0, GL_DEPTH_COMPONENT, GL_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, g_depth_tex, 0);
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    glGenRenderbuffers(1, &g_frame_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, g_frame_rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, g_window_w, g_window_h); // use a single renderbuffer object for both a depth AND stencil buffer.
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, g_frame_rbo); // now actually attach it
+    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
@@ -123,6 +120,7 @@ void DeleteQuad() {
 	glDeleteVertexArrays(1, &g_quad_vao);
 }
 
+
 /**
 InitOpenGL: 프로그램 초기 값 설정을 위해 최초 한 번 호출되는 함수. (main 함수 참고)
 OpenGL에 관련한 초기 값과 프로그램에 필요한 다른 초기 값을 설정한다.
@@ -131,8 +129,7 @@ OpenGL에 관련한 초기 값과 프로그램에 필요한 다른 초기 값을
 void InitOpenGL()
 {
 	s_program_id = CreateFromFiles("../Shaders/v_shader.glsl", "../Shaders/f_shader.glsl");
-	s_postprocess_id = CreateFromFiles("../Shaders/v_shader_postprocess.glsl", "../Shaders/f_shader_dof.glsl");
-	glUseProgram(s_program_id);
+	s_postprocess_id = CreateFromFiles("../Shaders/v_shader_postprocess.glsl", "../Shaders/f_shader_postprocess.glsl");
 
 	glViewport(0, 0, (GLsizei)g_window_w, (GLsizei)g_window_h);
 
@@ -211,7 +208,7 @@ void Display()
 
 
 	// Projection Transform Matrix 설정.
-	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.f), g_aspect, 1.0f, 1000.f);
+	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.f), g_aspect, 0.01f, 10000.f);
 	glUniformMatrix4fv(m_proj_loc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 
 	// Camera Transform Matrix 설정.
@@ -276,28 +273,23 @@ void Display()
 		}
 	}
 
+
+
 	///////////////////////////////////////////////////////
 	// Post Processing
 
 	// now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
 	glUseProgram(s_postprocess_id);
-	glUniform1i(glGetUniformLocation(s_postprocess_id, "screen_tex"), 0);
-	glUniform1i(glGetUniformLocation(s_postprocess_id, "depth_tex"), 1);
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
     // clear all relevant buffers
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glBindVertexArray(g_quad_vao);
 	glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, g_frame_tex);	// use the color attachment texture as the texture of the quad plane
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, g_depth_tex);
-
-    glBindVertexArray(g_quad_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
 
 	// flipping the double buffers
 	// glutSwapBuffers는 항상 Display 함수 가장 아래 부분에서 한 번만 호출되어야한다.
@@ -335,6 +327,8 @@ void Timer(int value)
 }
 
 
+
+
 /**
 Reshape: 윈도우의 크기가 조정될 때마다 자동으로 호출되는 callback 함수.
 
@@ -347,10 +341,7 @@ void Reshape(int w, int h)
 	g_window_w = w;
 	g_window_h = h;
 
-	int viewport_w = g_window_h * g_aspect;
-	int left_margin = (g_window_w - viewport_w) / 2;
-
-	glViewport( 0, 0, (GLsizei)viewport_w, (GLsizei)h);
+	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 
 	glutPostRedisplay();
 }

@@ -1,4 +1,4 @@
-#version 330
+#version 320 es
 				
 in vec4 fs_color;
 in vec3 fs_normal;

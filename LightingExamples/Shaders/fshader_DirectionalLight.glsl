@@ -30,7 +30,6 @@ void main()
 	vec3 diffuse = I_l * K_d * max(0.f, dot(L, N));
 	vec3 specular = I_l * K_s * pow(max(0.f, dot(N, H)), shininess_n);
 
-
 	color.rgb = ambient + diffuse + specular;
 	color.rgb = min(vec3(1.f, 1.f, 1.f), color.rgb);
 	color.a = fs_color.a;

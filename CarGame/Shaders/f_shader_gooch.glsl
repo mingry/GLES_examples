@@ -19,11 +19,18 @@ void main()
 	vec3 N = normalize(fs_normal);
 	vec3 V = normalize(-fs_eye_dir);
 	
-
 	vec3 highlight = vec3(1.f, 1.f, 1.f);
 	vec3 cool = vec3(0.f, 0.f, 0.55f) + 0.25f * fs_color.rgb;
 	vec3 warm = vec3(0.3f, 0.3f, 0.f) + 0.25f * fs_color.rgb;
 	
+	// edge detection
+	if ( max(0.f, dot(N, V)) < 0.2f )
+	{
+		color.rgb = vec3(0.f, 0.f, 0.f);
+		color.a = fs_color.a;
+		return;
+	}
+
 
 	float t = (dot(L, N) + 1.f) / 2.f;
 	vec3 R = 2.f*dot(N, L)*N - L;
